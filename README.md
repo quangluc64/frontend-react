@@ -1,70 +1,137 @@
-# Getting Started with Create React App
+# Hướng dẫn kết nối Frontend React với Backend Python
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Tổng quan
 
-## Available Scripts
+Dự án này bao gồm:
 
-In the project directory, you can run:
+- **Backend**: Flask API server (Python) chạy trên port 5000
+- **Frontend**: React application với Tailwind CSS
 
-### `npm start`
+## Cấu trúc API
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Backend Endpoints (Flask - Port 5000)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- `GET /latest_plates` - Lấy danh sách biển số mới nhất
+- `GET /plates-history?xe=<plate>` - Lấy lịch sử biển số
+- `POST /update_plate` - Cập nhật biển số (giả lập)
+- `POST /search` - Tìm kiếm nhân viên
+- `POST /add_employee` - Thêm nhân viên mới
+- `GET /video` - Stream video từ camera
 
-### `npm test`
+### Frontend Routes (React - Port 3000)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `/` - Trang chủ (hiển thị camera và danh sách biển số)
+- `/manage` - Quản lý người dùng
+- `/employees` - Quản lý nhân viên
 
-### `npm run build`
+## Cách chạy dự án
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Chạy Backend (Python Flask)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+cd backend
+python app.py
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Backend sẽ chạy trên: http://127.0.0.1:5000
 
-### `npm run eject`
+### 2. Chạy Frontend (React)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+cd frontend-react
+npm install
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Frontend sẽ chạy trên: http://localhost:3000
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Cấu hình API
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Development Mode
 
-## Learn More
+- Frontend sử dụng proxy để gọi API backend
+- Proxy được cấu hình trong `package.json`: `"proxy": "http://127.0.0.1:5000"`
+- API calls sẽ tự động được proxy đến backend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Production Mode
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Cần set biến môi trường `REACT_APP_API_BASE` để chỉ định URL backend
+- Ví dụ: `REACT_APP_API_BASE=https://your-backend-domain.com`
 
-### Code Splitting
+## Cấu trúc Code Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### API Service (`src/services/api.js`)
 
-### Analyzing the Bundle Size
+- `platesApi`: Quản lý API liên quan đến biển số
+- `employeeApi`: Quản lý API liên quan đến nhân viên
+- `videoApi`: Quản lý API video stream
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Custom Hooks (`src/hooks/`)
 
-### Making a Progressive Web App
+- `usePlates.js`: Hooks quản lý data biển số
+- `useEmployee.js`: Hooks quản lý data nhân viên
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Components
 
-### Advanced Configuration
+- `HomePage.js`: Trang chủ với camera và danh sách biển số
+- `EmployeeManage.js`: Trang quản lý nhân viên
+- `PlatesTable.js`: Component hiển thị bảng biển số
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Tính năng chính
 
-### Deployment
+### 1. Trang chủ (`/`)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Hiển thị camera stream từ backend
+- Danh sách biển số mới nhất (auto-refresh mỗi 2 giây)
+- Giả lập biển số để test
+- Tra cứu lịch sử biển số
+- Tabs: Nhật ký hoạt động, Xe vào, Xe ra
 
-### `npm run build` fails to minify
+### 2. Quản lý nhân viên (`/employees`)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Tìm kiếm nhân viên theo tên, chức vụ, biển số
+- Thêm nhân viên mới
+- Hiển thị danh sách kết quả tìm kiếm
+
+### 3. API Integration
+
+- Sử dụng Axios để gọi API
+- Error handling và loading states
+- Auto-retry và polling cho real-time data
+
+## Troubleshooting
+
+### Lỗi CORS
+
+- Đảm bảo backend có `CORS(app)` được enable
+- Trong development, sử dụng proxy trong `package.json`
+- Trong production, cấu hình đúng `REACT_APP_API_BASE`
+
+### Lỗi kết nối API
+
+- Kiểm tra backend có đang chạy trên port 5000
+- Kiểm tra proxy configuration
+- Xem console browser để debug API calls
+
+### Lỗi MongoDB
+
+- Đảm bảo MongoDB đang chạy
+- Kiểm tra connection string trong `backend/app.py`
+
+## Dependencies
+
+### Backend
+
+- Flask
+- Flask-CORS
+- PyMongo
+- OpenCV
+- Python 3.7+
+
+### Frontend
+
+- React 19.2.0
+- React Router DOM 7.9.4
+- Axios 1.6.0
+- Tailwind CSS 3.4.18
+- React Hot Toast 2.6.0

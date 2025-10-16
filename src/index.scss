@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Thêm hoặc ghi đè kiểu mặc định cho thẻ HTML(body, h1,...)
+// Áp dụng style toàn cục
+@layer base {
+  
+}
+// Tạo class tái sử dụng nhiều lần
+// Tổ chức các khối giao diện (components)
+@layer components {
+  .page-container {
+    width: 1180px;
+    max-width: calc(100% - 20px);
+    margin: 0 auto;
+    @apply mx-auto;
+  }
+
+}
