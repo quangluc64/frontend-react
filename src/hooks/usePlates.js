@@ -276,6 +276,72 @@ export const usePlatesByDate = () => {
   };
 };
 
+// Hook để quản lý dữ liệu theo tháng
+export const usePlatesByMonth = () => {
+  const [plates, setPlates] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const isMountedRef = useRef(true);
+
+  const fetchPlatesByMonth = useCallback(async (year, month) => {
+    if (!year || !month) {
+      setPlates([]);
+      setStats({});
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const [platesData, statsData] = await Promise.all([
+        platesApi.getPlatesByMonth(year, month),
+        platesApi.getMonthlyStats(year, month),
+      ]);
+
+      if (isMountedRef.current) {
+        const mappedPlates = mapPlateData(platesData);
+        setPlates(mappedPlates);
+        setStats(statsData);
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        console.error("Error fetching plates by month:", err);
+        setError(err.message || "Lỗi tải dữ liệu theo tháng");
+        setPlates([]);
+        setStats({});
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  const clearData = useCallback(() => {
+    setPlates([]);
+    setStats({});
+    setError("");
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  return {
+    plates,
+    stats,
+    loading,
+    error,
+    fetchPlatesByMonth,
+    clearData,
+  };
+};
+
 // Hook tổng hợp để quản lý toàn bộ trang chủ
 export const useHomePageData = () => {
   const latestPlates = useLatestPlates(20000);

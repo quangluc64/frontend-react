@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import PlatesTable from "../components/table/PlatesTable";
+import ExcelExport from "../components/export/ExcelExport";
 import { usePlatesByDate } from "../hooks/usePlates";
 
 const ManagePage = () => {
@@ -81,6 +82,9 @@ const ManagePage = () => {
           </p>
         </div>
       </div>
+
+      {/* Export Section */}
+      <ExcelExport />
 
       {/* Date Filter */}
       <div className="bg-white rounded-xl shadow-lg p-6">

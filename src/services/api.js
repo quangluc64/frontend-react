@@ -95,6 +95,30 @@ export const platesApi = {
       throw new Error(`Lỗi tải thống kê ngày: ${error.message}`);
     }
   },
+
+  // Lấy danh sách biển số theo tháng
+  getPlatesByMonth: async (year, month) => {
+    try {
+      const response = await apiClient.get(
+        `/plates-by-month?year=${year}&month=${month}`
+      );
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      throw new Error(`Lỗi tải dữ liệu theo tháng: ${error.message}`);
+    }
+  },
+
+  // Lấy thống kê theo tháng
+  getMonthlyStats: async (year, month) => {
+    try {
+      const response = await apiClient.get(
+        `/monthly-stats?year=${year}&month=${month}`
+      );
+      return response;
+    } catch (error) {
+      throw new Error(`Lỗi tải thống kê tháng: ${error.message}`);
+    }
+  },
 };
 
 export const employeeApi = {
