@@ -131,38 +131,41 @@ export const usePlateSimulation = (onSuccess) => {
   const [error, setError] = useState("");
   const isMountedRef = useRef(true);
 
-  const simulatePlate = useCallback(async (plateNumber) => {
-    if (!plateNumber?.trim()) {
-      setError("Vui lòng nhập biển số");
-      return false;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      
-      await platesApi.updatePlate(plateNumber.trim());
-      
-      if (isMountedRef.current) {
-        // Callback để parent component reload data
-        if (onSuccess) {
-          setTimeout(() => onSuccess(), 500); // Delay nhỏ để MongoDB kịp lưu
-        }
-        return true;
-      }
-    } catch (err) {
-      if (isMountedRef.current) {
-        console.error("Error simulating plate:", err);
-        setError(err.message || "Lỗi giả lập biển số");
+  const simulatePlate = useCallback(
+    async (plateNumber) => {
+      if (!plateNumber?.trim()) {
+        setError("Vui lòng nhập biển số");
         return false;
       }
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
+
+      try {
+        setLoading(true);
+        setError("");
+
+        await platesApi.updatePlate(plateNumber.trim());
+
+        if (isMountedRef.current) {
+          // Callback để parent component reload data
+          if (onSuccess) {
+            setTimeout(() => onSuccess(), 500); // Delay nhỏ để MongoDB kịp lưu
+          }
+          return true;
+        }
+      } catch (err) {
+        if (isMountedRef.current) {
+          console.error("Error simulating plate:", err);
+          setError(err.message || "Lỗi giả lập biển số");
+          return false;
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
-    }
-    return false;
-  }, [onSuccess]);
+      return false;
+    },
+    [onSuccess]
+  );
 
   const clearError = useCallback(() => {
     setError("");
@@ -207,13 +210,78 @@ export const useCameraStatus = () => {
   };
 };
 
+// Hook để quản lý dữ liệu theo ngày
+export const usePlatesByDate = () => {
+  const [plates, setPlates] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const isMountedRef = useRef(true);
+
+  const fetchPlatesByDate = useCallback(async (date) => {
+    if (!date) {
+      setPlates([]);
+      setStats({});
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const [platesData, statsData] = await Promise.all([
+        platesApi.getPlatesByDate(date),
+        platesApi.getDailyStats(date),
+      ]);
+
+      if (isMountedRef.current) {
+        const mappedPlates = mapPlateData(platesData);
+        setPlates(mappedPlates);
+        setStats(statsData);
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        console.error("Error fetching plates by date:", err);
+        setError(err.message || "Lỗi tải dữ liệu theo ngày");
+        setPlates([]);
+        setStats({});
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  const clearData = useCallback(() => {
+    setPlates([]);
+    setStats({});
+    setError("");
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  return {
+    plates,
+    stats,
+    loading,
+    error,
+    fetchPlatesByDate,
+    clearData,
+  };
+};
 
 // Hook tổng hợp để quản lý toàn bộ trang chủ
 export const useHomePageData = () => {
   const latestPlates = useLatestPlates(20000);
   const platesHistory = usePlatesHistory();
   const cameraStatus = useCameraStatus();
-  
+
   // Tạo callback để reload sau khi simulate
   const plateSimulation = usePlateSimulation(() => {
     // Force reload ngay sau khi simulate thành công

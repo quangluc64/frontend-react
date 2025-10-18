@@ -70,6 +70,31 @@ export const platesApi = {
     }
   },
 
+  // Lấy danh sách biển số theo ngày
+  getPlatesByDate: async (date) => {
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.PLATES_BY_DATE}?date=${encodeURIComponent(
+          date
+        )}`
+      );
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      throw new Error(`Lỗi tải dữ liệu theo ngày: ${error.message}`);
+    }
+  },
+
+  // Lấy thống kê theo ngày
+  getDailyStats: async (date) => {
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.DAILY_STATS}?date=${encodeURIComponent(date)}`
+      );
+      return response;
+    } catch (error) {
+      throw new Error(`Lỗi tải thống kê ngày: ${error.message}`);
+    }
+  },
 };
 
 export const employeeApi = {
